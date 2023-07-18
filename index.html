@@ -1,0 +1,291 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>web-view</title>
+    <style type="text/css">
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .node {
+        width: 300px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .node h2 {
+        color: #38f;
+    }
+    </style>
+    <script type="text/javascript" src="https://b.bdstatic.com/searchbox/icms/searchbox/js/swan-2.0.31.js"></script>
+</head>
+
+<body>
+    <div class="node">
+        <h2>相关接口1</h2>
+        <h3>onLoad接收参数</h3>
+        <button type="button" id="navToSmart">点我跳转小程序其他页</button>
+        <button type="button" id="refresh">点我刷新</button>
+        <button type="button" id="isSmartApp">是否运行在小程序中</button>
+        <h3>小程序接收web-view传过来的参数</h3>
+        <button type="button" id="postMessage">点击向小程序发送消息</button>
+        <button type="button" id="back">小程序后退</button>
+        <button type="button">请点击右上方胶囊分享</button>
+        <h2>相关接口2</h2>
+        <button type="button" id="makePhoneCall">点击拨打电话</button>
+        <button type="button" id="setClipboardData">设置剪贴板</button>
+        <button type="button" id="getNetworkType">获取网络类型</button>
+        <button type="button" id="openShare">分享</button>
+        <button type="button" id="navigateToSmartProgram">打开小程序</button>
+        <button type="button" id="openLocation">打开地图查看当前位置</button>
+        <button type="button" id="getLocation">获取当前地理位置</button>
+        <button type="button" id="chooseLocation">选择地理位置</button>
+        <button type="button" id="chooseImage">拍照或上传</button>
+        <button type="button" id="previewImage">预览图片</button>
+        <!-- <button type="button" id="login">用户登陆</button> -->
+        <h2>相关接口3</h2>
+        <button type="button">请点击右上方胶囊分享</button>
+        <h2>功能1:H5页面之间跳转有返回按钮</h2>
+        <button type="button" id="toH5">点击跳转到另一个 H5 页面</button>
+    </div>
+</body>
+</html>
+<script type="text/javascript">
+/* globals swan */
+// 页面加载时判断是否在小程序环境中
+const isSmartApp = function () {
+    // 写法一
+    swan.webView.getEnv(function (res) {
+        console.log(res);
+        alert(`当前页面是否运行在小程序中：${res.smartprogram}`); // true
+    });
+    // 写法二
+    // const isWebView = /swan\//.test(window.navigator.userAgent) || /^webswan-/.test(window.name);
+    // alert(`当前页面是否运行在小程序中：${isWebView}`); // true
+};
+
+// 跳转回小程序页面
+const navToSmart = function () {
+    // swan.webView.switchTab
+    // swan.webView.reLaunch
+    // swan.webView.navigateTo
+    swan.webView.redirectTo({
+        url: '/component/to-web-view/to-web-view?key=fromWebview',
+        success() {
+            console.log('to-web-view success');
+        },
+        fail() {
+            console.log('fail');
+        }
+    });
+    swan.webView.postMessage({data: 'foo'});
+};
+// H5页面重新刷新带参数
+const refresh = function () {
+    console.log('refresh');
+    swan.webView.redirectTo({
+        url: '/component/webview/webview?key=refresh',
+        success() {
+            console.log('to-web-view');
+        },
+        fail() {
+            console.log('fail');
+        }
+    });
+};
+// H5页面向小程序发送消息
+const postMessageHandler = function () {
+    swan.webView.postMessage({
+        data: {
+            key: 'message'
+        }
+    });
+};
+// H5页面返回上级小程序页面
+const backHandler = function () {
+    swan.webView.navigateBack();
+};
+document.getElementById('navToSmart').onclick = navToSmart;
+document.getElementById('isSmartApp').onclick = isSmartApp;
+document.getElementById('refresh').onclick = refresh;
+document.getElementById('postMessage').onclick = postMessageHandler;
+document.getElementById('back').onclick = backHandler;
+// 调用拨打电话API
+const makePhoneCallHandler = function () {
+    swan.makePhoneCall({
+        phoneNumber: '(0313)xxxx xxxx',
+        success: res => {
+            console.log('res', res);
+        },
+        fail: err => {
+            alert('拨打失败，请检查是否输入了正确的电话号码');
+        }
+    });
+};
+// 调用剪贴板API
+const setClipboardDataHandler = function () {
+    swan.setClipboardData({
+        data: 'originData',
+        success: res => {
+            alert('设置成功，剪贴板内容为originData');
+        },
+        fail: err => {
+            alert('设置失败');
+        }
+    });
+};
+// 调用网络类型API
+const getNetworkTypeHandler = function () {
+    swan.getNetworkType({
+        success: res => {
+            alert(`当前网络状态为${res.networkType}`);
+            console.log('getNetworkTypeHandler', res.networkType);
+        },
+        fail: err => {
+            alert('获取网络类型失败');
+        }
+    });
+};
+// 调用分享API
+const openShareHandler = function () {
+    swan.openShare({
+        title: '智能小程序示例',
+        content: '世界很复杂，百度更懂你',
+        path: 'swan-api/open-share/open-share?key=value',
+        imageUrl: 'https://smartprogram.baidu.com/docs/img/logo_new.png',
+        success: res => {
+            alert('分享成功');
+            console.log('openShare success', res);
+        },
+        fail: err => {
+            alert('分享失败');
+            console.log('openShare fail', err);
+        }
+    });
+};
+// 调用打开另一个小程序API
+const navigateToSmartProgramHandler = function () {
+    swan.navigateToSmartProgram({
+        // 打开目标小程序的AppKey，开发版AppKey可在开发者工具中预览获取
+        appKey: 'sc9Tq1iKawTnj5GhG6i77vzeIt4Crt5u',
+        success: res => {
+            console.log('navigateToSmartProgram success', res);
+        },
+        fail: err => {
+            alert('打开失败');
+            console.log('navigateToSmartProgram fail', err);
+        }
+    });
+};
+// 调用打开地图API
+const openLocationHandler = function () {
+    swan.openLocation({
+        latitude: 40.04,
+        longitude: 116.27,
+        scale: 18,
+        name: '百度科技园',
+        address: '北京市海淀区西北旺东路10号院',
+        success: res => {
+            alert('打开成功');
+            console.log('openLocation success', res);
+        },
+        fail: err => {
+            alert('打开失败');
+            console.log('openLocation fail', err);
+        }
+    });
+};
+// 调用获取地图位置API
+const getLocationHandler = function () {
+    swan.getLocation({
+        type: 'gcj02',
+        altitude: true,
+        success: res => {
+            alert('打开成功，详细信息请到控制台查看');
+            console.log('getLocation success', res);
+        },
+        fail: err => {
+            alert('打开失败');
+        }
+    });
+};
+// 调用选择图片API
+const chooseImageHandler = function () {
+    swan.chooseImage({
+        count: 9,
+        sizeType: ['original'],
+        sourceType: ['camera'],
+        success: res => {
+            console.log('res.tempFilePaths', res.tempFilePaths);
+        },
+        fail: err => {
+            alert('接口调用失败');
+            console.log('chooseImage fail', err);
+        }
+    });
+};
+// 调用预览图片API
+const previewImageHandler = function () {
+    swan.previewImage({
+        current: 'https://b.bdstatic.com/miniapp/image/swan-preview-image-2-zip.png', // current需与urls中链接一致
+        urls: ['https://b.bdstatic.com/miniapp/image/swan-preview-image-2-zip.png'],
+        success: res => {
+            console.log('previewImage success');
+        },
+        fail: err => {
+            alert('打开失败');
+            console.log('previewImage fail', err);
+        }
+    });
+};
+// // 调用登录API
+// const loginHandler = function () {
+//     swan.login({
+//         success: res => {
+//             alert('已登录');
+//             console.log('login success', res);
+//         },
+//         fail: err => {
+//             alert('登录失败');
+//             console.log('login fail', err);
+//         }
+//     });
+// };
+const chooseLocationHandler = function () {
+    swan.chooseLocation({
+        longitude: 113.324520,
+        latitude: 23.10229,
+        success: res => {
+            console.log('chooseLocation success');
+        },
+        fail: err => {
+            console.log('chooseLocation fail', err);
+        }
+    });
+}
+
+
+document.getElementById('makePhoneCall').onclick = makePhoneCallHandler;
+document.getElementById('setClipboardData').onclick = setClipboardDataHandler;
+document.getElementById('getNetworkType').onclick = getNetworkTypeHandler;
+document.getElementById('openShare').onclick = openShareHandler;
+document.getElementById('navigateToSmartProgram').onclick = navigateToSmartProgramHandler;
+document.getElementById('openLocation').onclick = openLocationHandler;
+document.getElementById('getLocation').onclick = getLocationHandler;
+document.getElementById('chooseLocation').onclick = chooseLocationHandler;
+document.getElementById('chooseImage').onclick = chooseImageHandler;
+document.getElementById('previewImage').onclick = previewImageHandler;
+// document.getElementById('login').onclick = loginHandler;
+// 将跳转提升至小程序层面
+const toH5Handler = function () {
+    swan.webView.navigateTo({
+        // 带不同的query展示不同页面
+        url: '/component/webview/webview?weburl=2'
+    });
+};
+document.getElementById('toH5').onclick = toH5Handler;
+</script>
